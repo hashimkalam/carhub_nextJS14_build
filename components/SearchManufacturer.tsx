@@ -1,31 +1,59 @@
-"use client";
-
+import React, { useState } from "react";
+import Select, { ActionMeta, InputActionMeta, ValueType } from "react-select";
 import { SearchManufacturerProps } from "@/types";
-import { Combobox, Transition } from "@headlessui/react";
 import Image from "next/image";
-import { useState, Fragment } from "react";
-
 import { manufacturers } from "@/constants";
 
 function SearchManufacturer({
   manufacturer,
   setManufacturer,
 }: SearchManufacturerProps) {
-  const [query, setQuery] = useState("");
+  const [inputValue, setInputValue] = useState("");
 
-  const filteredManufacturers =
-    query === ""
-      ? manufacturers
-      : manufacturers.filter((item) =>
-          item
-            .toLowerCase()
-            .replace(/\s+/g, "")
-            .includes(query.toLowerCase().replace(/\s+/g, ""))
-        );
+  const handleInputChange = (newValue: string, actionMeta: InputActionMeta) => {
+    setInputValue(newValue);
+  };
+
+  const handleSelectChange = (
+    selectedOption: ValueType<{ value: string; label: string }, false>,
+    actionMeta: ActionMeta<{ value: string; label: string }>
+  ) => {
+    const newValue = selectedOption ? selectedOption.value : null;
+    setManufacturer(newValue !== null ? newValue : "");
+  };
+  const filteredOptions = manufacturers
+    .filter((item) => item.toLowerCase().includes(inputValue.toLowerCase()))
+    .map((item) => ({
+      value: item,
+      label: item,
+    }));
 
   return (
     <div className="search-manufacturer">
-      <Combobox>
+      <div className="relative w-full">
+        <Image
+          src="/car-logo.svg"
+          width={20}
+          height={20}
+          className="absolute top-[14px] ml-4"
+          alt="Car Logo"
+        />
+
+        <Select
+          className="search-manufacturer_input"
+          placeholder="Volkswagen"
+          value={filteredOptions.find(
+            (option) => option.value === manufacturer
+          )}
+          options={filteredOptions}
+          onInputChange={handleInputChange}
+          onChange={handleSelectChange}
+          isClearable
+          onMenuOpen={() => setInputValue("")}
+        />
+      </div>
+
+      {/* <Combobox value={manufacturer} onChange(setManufacturer)>
         <div className="relative w-full">
           <Combobox.Button className="absolute top-[14px]">
             <Image
@@ -86,7 +114,7 @@ function SearchManufacturer({
             </Combobox.Options>
           </Transition>
         </div>
-      </Combobox>
+      </Combobox> */}
     </div>
   );
 }
